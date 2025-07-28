@@ -32,7 +32,7 @@ class BasicTest extends TestCase
         $response->assertRedirect('/login');
 
         // Test 5: Authenticated user can access dashboard
-        $this->actingAs($user);
+        $this->actingAs(User::find($user->id)); // Asegura que sea una instancia de User/Authenticatable
         $response = $this->get('/dashboard');
         $this->assertEquals(200, $response->status());
     }
