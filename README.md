@@ -34,7 +34,7 @@
 ## 🛠️ Stack Tecnológico
 
 | Componente | Tecnología | Versión |
-|------------|------------|---------|
+|------------|------------|---------||
 | **Backend** | Laravel | 12.x |
 | **Base de Datos** | PostgreSQL | 15+ |
 | **Frontend** | Livewire + Volt | 2.x |
