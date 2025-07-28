@@ -1,22 +1,22 @@
 <?php
 
+use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 
+// Rutas públicas
 Route::get('/', function () {
-    return view('welcome');
-})->name('home');
+    return redirect()->route('login');
+});
 
-Route::view('dashboard', 'dashboard')
-    ->middleware(['auth', 'verified'])
-    ->name('dashboard');
-
+// Rutas protegidas por autenticación
 Route::middleware(['auth'])->group(function () {
-    Route::redirect('settings', 'settings/profile');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+    // Rutas de configuración/settings
     Volt::route('settings/profile', 'settings.profile')->name('settings.profile');
     Volt::route('settings/password', 'settings.password')->name('settings.password');
     Volt::route('settings/appearance', 'settings.appearance')->name('settings.appearance');
-});
 
-require __DIR__.'/auth.php';
+    // TODO: Aquí irán las rutas de contactos, transacciones, etc.
+});
