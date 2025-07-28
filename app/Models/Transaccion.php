@@ -81,23 +81,32 @@ class Transaccion extends Model
 
     public function scopeBuscarReferencia($query, $termino)
     {
-        return $query->where('referencia_nombre', 'ILIKE', "%{$termino}%");
+        // Usar LIKE que es compatible con SQLite y PostgreSQL
+        return $query->where('referencia_nombre', 'LIKE', "%{$termino}%");
     }
 
     public function scopeBuscarFactura($query, $numero)
     {
-        return $query->where('factura_numero', 'ILIKE', "%{$numero}%");
+        // Usar LIKE que es compatible con SQLite y PostgreSQL
+        return $query->where('factura_numero', 'LIKE', "%{$numero}%");
     }
 
-    // Scope para búsquedas en conceptos de facturas (PostgreSQL JSONB)
+    // Scope para búsquedas en conceptos de facturas (compatible con SQLite y PostgreSQL)
     public function scopeBuscarEnConceptos($query, $termino)
     {
-        return $query->whereRaw("
-            EXISTS (
-                SELECT 1 
-                FROM jsonb_array_elements(factura_datos->'conceptos') as concepto
-                WHERE concepto->>'descripcion' ILIKE ?
-            )", ["%{$termino}%"]);
+        $driver = config('database.default');
+
+        if ($driver === 'pgsql') {
+            return $query->whereRaw("
+                EXISTS (
+                    SELECT 1 
+                    FROM jsonb_array_elements(factura_datos->'conceptos') as concepto
+                    WHERE concepto->>'descripcion' ILIKE ?
+                )", ["%{$termino}%"]);
+        } else {
+            // Fallback para SQLite y otros drivers - buscar en el JSON como texto
+            return $query->where('factura_datos', 'LIKE', "%{$termino}%");
+        }
     }
 
     // Métodos para generar folio automático

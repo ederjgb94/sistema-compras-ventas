@@ -49,9 +49,9 @@ class Contacto extends Model
     public function scopeBuscar($query, $termino)
     {
         return $query->where(function ($q) use ($termino) {
-            $q->where('nombre', 'ILIKE', "%{$termino}%")
-                ->orWhere('rfc', 'ILIKE', "%{$termino}%")
-                ->orWhere('email', 'ILIKE', "%{$termino}%");
+            $q->where('nombre', 'LIKE', "%{$termino}%")
+                ->orWhere('rfc', 'LIKE', "%{$termino}%")
+                ->orWhere('email', 'LIKE', "%{$termino}%");
         });
     }
 }

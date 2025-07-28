@@ -22,13 +22,14 @@ return new class extends Migration
             // Referencias flexibles (obra/producto)
             $table->enum('referencia_tipo', ['obra', 'producto'])->index();
             $table->string('referencia_nombre')->index();
-            $table->jsonb('referencia_datos')->nullable();
+            // Usar json() que es compatible con SQLite y PostgreSQL
+            $table->json('referencia_datos')->nullable();
 
             // Facturas flexibles
             $table->enum('factura_tipo', ['manual', 'archivo', 'mixta'])->index();
             $table->string('factura_numero', 100)->nullable()->index();
-            $table->jsonb('factura_datos')->nullable();
-            $table->jsonb('factura_archivos')->nullable();
+            $table->json('factura_datos')->nullable();
+            $table->json('factura_archivos')->nullable();
 
             // Datos financieros
             $table->foreignId('metodo_pago_id')->constrained('metodos_pago')->restrictOnDelete();
@@ -45,8 +46,14 @@ return new class extends Migration
             $table->index(['referencia_tipo', 'referencia_nombre']);
         });
 
-        // Crear índices GIN para JSONB (solo PostgreSQL)
+        // Crear índices GIN para JSONB solo en PostgreSQL (producción)
         if (DB::getDriverName() === 'pgsql') {
+            // Usar JSONB en PostgreSQL para mejor performance
+            DB::statement('ALTER TABLE transacciones ALTER COLUMN referencia_datos TYPE JSONB USING referencia_datos::JSONB');
+            DB::statement('ALTER TABLE transacciones ALTER COLUMN factura_datos TYPE JSONB USING factura_datos::JSONB');
+            DB::statement('ALTER TABLE transacciones ALTER COLUMN factura_archivos TYPE JSONB USING factura_archivos::JSONB');
+
+            // Crear índices GIN
             DB::statement('CREATE INDEX idx_transacciones_referencia_gin ON transacciones USING GIN (referencia_datos)');
             DB::statement('CREATE INDEX idx_transacciones_factura_gin ON transacciones USING GIN (factura_datos)');
             DB::statement('CREATE INDEX idx_transacciones_archivos_gin ON transacciones USING GIN (factura_archivos)');
