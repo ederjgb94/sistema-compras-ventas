@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Iconos</title>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        body {
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+
+        .theme-toggle {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body x-data="{ darkMode: false }">
+    <h1>Test de Iconos</h1>
+    <p>Botón de cambio de tema:</p>
+
+    <button @click="darkMode = !darkMode" class="theme-toggle">
+        <i data-lucide="sun" class="w-5 h-5" x-show="darkMode"></i>
+        <i data-lucide="moon" class="w-5 h-5" x-show="!darkMode"></i>
+        <span x-text="darkMode ? 'Modo Claro' : 'Modo Oscuro'"></span>
+    </button>
+
+    <p>Estado: <span x-text="darkMode ? 'Oscuro' : 'Claro'"></span></p>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            lucide.createIcons();
+        });
+
+        document.addEventListener('alpine:updated', function () {
+            lucide.createIcons();
+        });
+    </script>
+</body>
+
+</html>
