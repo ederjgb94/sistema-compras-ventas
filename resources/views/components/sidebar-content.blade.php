@@ -23,28 +23,28 @@
                 </li>
 
                 <!-- Transacciones -->
-                <li x-data="{ open: false }">
+                <li x-data="{ open: {{ request()->routeIs('transacciones.*') ? 'true' : 'false' }} }">
                     <button @click="open = !open" 
-                            class="group flex w-full items-center gap-x-3 rounded-md p-2 text-left text-sm leading-6 font-semibold text-gray-700 dark:text-gray-300 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+                            class="group flex w-full items-center gap-x-3 rounded-md p-2 text-left text-sm leading-6 font-semibold {{ request()->routeIs('transacciones.*') ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300' : 'text-gray-700 dark:text-gray-300 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
                         <i data-lucide="receipt" class="h-6 w-6 shrink-0"></i>
                         Transacciones
                         <i data-lucide="chevron-right" class="ml-auto h-5 w-5 shrink-0 transition-transform duration-200" :class="{ 'rotate-90': open }"></i>
                     </button>
                     <ul x-show="open" x-transition class="mt-1 px-2">
                         <li>
-                            <a href="#" class="group flex gap-x-3 rounded-md py-2 pl-8 pr-2 text-sm leading-6 text-gray-600 dark:text-gray-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+                            <a href="{{ route('transacciones.index') }}?tipoFiltro=ingreso" class="group flex gap-x-3 rounded-md py-2 pl-8 pr-2 text-sm leading-6 {{ request()->routeIs('transacciones.index') && request('tipoFiltro') === 'ingreso' ? 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20' : 'text-gray-600 dark:text-gray-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
                                 <i data-lucide="trending-up" class="h-5 w-5 shrink-0"></i>
                                 Ingresos
                             </a>
                         </li>
                         <li>
-                            <a href="#" class="group flex gap-x-3 rounded-md py-2 pl-8 pr-2 text-sm leading-6 text-gray-600 dark:text-gray-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+                            <a href="{{ route('transacciones.index') }}?tipoFiltro=egreso" class="group flex gap-x-3 rounded-md py-2 pl-8 pr-2 text-sm leading-6 {{ request()->routeIs('transacciones.index') && request('tipoFiltro') === 'egreso' ? 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20' : 'text-gray-600 dark:text-gray-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
                                 <i data-lucide="trending-down" class="h-5 w-5 shrink-0"></i>
                                 Egresos
                             </a>
                         </li>
                         <li>
-                            <a href="#" class="group flex gap-x-3 rounded-md py-2 pl-8 pr-2 text-sm leading-6 text-gray-600 dark:text-gray-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+                            <a href="{{ route('transacciones.index') }}" class="group flex gap-x-3 rounded-md py-2 pl-8 pr-2 text-sm leading-6 {{ request()->routeIs('transacciones.index') && !request('tipoFiltro') ? 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20' : 'text-gray-600 dark:text-gray-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
                                 <i data-lucide="list" class="h-5 w-5 shrink-0"></i>
                                 Todas
                             </a>
@@ -54,19 +54,10 @@
 
                 <!-- Contactos -->
                 <li>
-                    <a href="#" 
-                       class="group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold text-gray-700 dark:text-gray-300 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <a href="{{ route('contactos.index') }}" 
+                       class="group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold {{ request()->routeIs('contactos.*') ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300' : 'text-gray-700 dark:text-gray-300 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
                         <i data-lucide="users" class="h-6 w-6 shrink-0"></i>
                         Contactos
-                    </a>
-                </li>
-
-                <!-- Inventario -->
-                <li>
-                    <a href="#" 
-                       class="group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold text-gray-700 dark:text-gray-300 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-gray-50 dark:hover:bg-gray-700">
-                        <i data-lucide="package" class="h-6 w-6 shrink-0"></i>
-                        Inventario
                     </a>
                 </li>
 

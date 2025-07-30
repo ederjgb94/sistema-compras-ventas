@@ -1,10 +1,11 @@
 @props(['pageTitle' => '', 'pageDescription' => '', 'headerActions' => ''])
 
 <!DOCTYPE html>
-<html lang="es" x-data="{ darkMode: localStorage.getItem('darkMode') === 'true' }" x-bind:class="{ 'dark': darkMode }">
+<html lang="es" x-data="{ darkMode: localStorage.getItem('darkMode') === 'true' }" x-bind:class="{ 'dark': darkMode }" x-init="Alpine.initTree($el)">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $pageTitle ? $pageTitle . ' - ' : '' }}Lamda - Sistema de Compras y Ventas</title>
     
     <!-- Fonts -->
@@ -13,9 +14,7 @@
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-
-    <!-- Alpine.js -->
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    @livewireStyles
 
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
@@ -86,10 +85,22 @@
                 <div class="flex flex-1 items-center justify-between">
                     <!-- Page title and description -->
                     <div class="flex-1">
-                        @if($pageTitle)
-                            <h1 class="text-xl font-semibold text-gray-900 dark:text-white">{{ $pageTitle }}</h1>
-                            @if($pageDescription)
-                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ $pageDescription }}</p>
+                        @if(isset($pageTitle) || hasSection('pageTitle'))
+                            <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
+                                @if(isset($pageTitle))
+                                    {{ $pageTitle }}
+                                @else
+                                    @yield('pageTitle')
+                                @endif
+                            </h1>
+                            @if(isset($pageDescription) || hasSection('pageDescription'))
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                    @if(isset($pageDescription))
+                                        {{ $pageDescription }}
+                                    @else
+                                        @yield('pageDescription')
+                                    @endif
+                                </p>
                             @endif
                         @endif
                     </div>
@@ -177,5 +188,7 @@
             lucide.createIcons();
         });
     </script>
+
+    @livewireScripts
 </body>
 </html>
