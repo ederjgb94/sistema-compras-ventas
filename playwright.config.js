@@ -1,6 +1,9 @@
-const { defineConfig, devices } = require('@playwright/test');
+import { defineConfig, devices } from '@playwright/test';
 
-module.exports = defineConfig({
+export default defineConfig({
+    // Directorio donde están los tests
+    testDir: './e2e',
+
     // Configuración específica para este proyecto
     use: {
         // URL base del proyecto
@@ -33,11 +36,4 @@ module.exports = defineConfig({
             use: { ...devices['Desktop Chrome'] },
         },
     ],
-
-    // Configuración del servidor web (si quieres que Playwright inicie el servidor)
-    webServer: {
-        command: 'php artisan serve --host=0.0.0.0 --port=8000',
-        port: 8000,
-        reuseExistingServer: !process.env.CI,
-    },
 });
