@@ -5,15 +5,30 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Volt\Component;
 
-new #[Layout('components.app-layout')] #[Title('Crear Contacto')] class extends Component {
-    // Propiedades para el formulario de creación
-    public string $tipo = 'cliente';
+new #[Layout('components.app-layout')] #[Title('Editar Contacto')] class extends Component {
+    public Contacto $contacto;
+    
+    // Propiedades para el formulario de edición
+    public string $tipo = '';
     public bool $activo = true;
     public string $nombre = '';
     public string $email = '';
     public string $telefono = '';
     public string $rfc = '';
     public string $direccion = '';
+
+    public function mount($id)
+    {
+        $this->contacto = Contacto::findOrFail($id);
+        
+        $this->tipo = $this->contacto->tipo;
+        $this->activo = $this->contacto->activo;
+        $this->nombre = $this->contacto->nombre;
+        $this->email = $this->contacto->email ?? '';
+        $this->telefono = $this->contacto->telefono ?? '';
+        $this->rfc = $this->contacto->rfc ?? '';
+        $this->direccion = $this->contacto->direccion ?? '';
+    }
 
     public function save()
     {
@@ -28,21 +43,21 @@ new #[Layout('components.app-layout')] #[Title('Crear Contacto')] class extends 
         ]);
 
         try {
-            Contacto::create([
+            $this->contacto->update([
                 'nombre' => $this->nombre,
-                'email' => $this->email,
-                'telefono' => $this->telefono,
-                'rfc' => $this->rfc,
-                'direccion' => $this->direccion,
+                'email' => $this->email ?: null,
+                'telefono' => $this->telefono ?: null,
+                'rfc' => $this->rfc ?: null,
+                'direccion' => $this->direccion ?: null,
                 'tipo' => $this->tipo,
                 'activo' => $this->activo,
             ]);
 
-            session()->flash('message', 'Contacto creado exitosamente.');
+            session()->flash('message', 'Contacto actualizado exitosamente.');
             return $this->redirect(route('contactos.index'));
             
         } catch (\Exception $e) {
-            session()->flash('error', 'Error al crear el contacto: ' . $e->getMessage());
+            session()->flash('error', 'Error al actualizar el contacto: ' . $e->getMessage());
         }
     }
 
@@ -55,36 +70,43 @@ new #[Layout('components.app-layout')] #[Title('Crear Contacto')] class extends 
 <div class="max-w-4xl mx-auto">
     <!-- Header con breadcrumb -->
     <div class="mb-8">
-        <nav class="flex mb-4" aria-label="Breadcrumb" wire:ignore>
+        <nav class="flex mb-4" aria-label="Breadcrumb">
             <ol class="inline-flex items-center space-x-1 md:space-x-3">
                 <li class="inline-flex items-center">
                     <a href="{{ route('contactos.index') }}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600 dark:text-gray-400 dark:hover:text-white">
-                        <i data-lucide="users" class="w-3 h-3 mr-2.5" wire:ignore></i>
+                        <i data-lucide="users" class="w-3 h-3 mr-2.5"></i>
                         Contactos
                     </a>
                 </li>
-            <!-- Icono del breadcrumb con wire:ignore para protegerlo -->
-            <li>
-                <div class="flex items-center">
-                    <i data-lucide="chevron-right" class="w-3 h-3 text-gray-400" wire:ignore></i>
-                    <span class="ml-1 text-sm font-medium text-gray-500 md:ml-2 dark:text-gray-400">Crear nuevo</span>
-                </div>
-            </li>
+                <li>
+                    <div class="flex items-center">
+                        <i data-lucide="chevron-right" class="w-3 h-3 text-gray-400"></i>
+                        <a href="{{ route('contactos.show', $contacto->id) }}" class="ml-1 text-sm font-medium text-gray-500 hover:text-blue-600 md:ml-2 dark:text-gray-400 dark:hover:text-white">
+                            {{ $contacto->nombre }}
+                        </a>
+                    </div>
+                </li>
+                <li>
+                    <div class="flex items-center">
+                        <i data-lucide="chevron-right" class="w-3 h-3 text-gray-400"></i>
+                        <span class="ml-1 text-sm font-medium text-gray-500 md:ml-2 dark:text-gray-400">Editar</span>
+                    </div>
+                </li>
             </ol>
         </nav>
         
         <div class="flex items-center justify-between">
-            <div class="flex-1 min-w-0">
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Crear Nuevo Contacto</h1>
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Editar Contacto</h1>
                 <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                    Completa la información para agregar un nuevo contacto a tu base de datos
+                    Modifica la información del contacto {{ $contacto->nombre }}
                 </p>
             </div>
             
-            <!-- Icono indicativo protegido -->
-            <div class="flex-shrink-0 ml-4" wire:ignore>
-                <div class="flex items-center justify-center w-12 h-12 rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400">
-                    <i data-lucide="user-plus" class="w-6 h-6"></i>
+            <!-- Icono indicativo -->
+            <div class="flex-shrink-0">
+                <div class="flex items-center justify-center w-12 h-12 rounded-lg bg-indigo-100 text-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-400">
+                    <i data-lucide="edit" class="w-6 h-6"></i>
                 </div>
             </div>
         </div>
@@ -188,7 +210,7 @@ new #[Layout('components.app-layout')] #[Title('Crear Contacto')] class extends 
                 </div>
             </div>
 
-            <!-- Información fiscal y dirección -->
+            <!-- Información adicional -->
             <div>
                 <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4">
                     Información adicional
@@ -209,16 +231,24 @@ new #[Layout('components.app-layout')] #[Title('Crear Contacto')] class extends 
                         @error('rfc') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                     </div>
 
-                    <!-- Dirección -->
-                    <div class="sm:col-span-1">
-                        <label for="direccion" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Dirección
+                    <!-- Estado activo -->
+                    <div class="sm:col-span-1 flex items-center pt-6">
+                        <label class="flex items-center">
+                            <input type="checkbox" wire:model="activo" class="rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500">
+                            <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Contacto activo</span>
                         </label>
-                        <textarea wire:model="direccion" id="direccion" rows="3" 
-                                  class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500" 
-                                  placeholder="Dirección completa (opcional)"></textarea>
-                        @error('direccion') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                     </div>
+                </div>
+
+                <!-- Dirección -->
+                <div class="mt-6">
+                    <label for="direccion" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Dirección
+                    </label>
+                    <textarea wire:model="direccion" id="direccion" rows="3" 
+                              class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500" 
+                              placeholder="Dirección completa (opcional)"></textarea>
+                    @error('direccion') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                 </div>
             </div>
 
@@ -230,15 +260,15 @@ new #[Layout('components.app-layout')] #[Title('Crear Contacto')] class extends 
                 </button>
                 
                 <button type="submit" 
-                        class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" 
+                        class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" 
                         wire:loading.attr="disabled">
-                    <span wire:loading.remove wire:target="save">Crear Contacto</span>
+                    <span wire:loading.remove wire:target="save">Guardar Cambios</span>
                     <span wire:loading wire:target="save" class="flex items-center">
                         <svg class="w-4 h-4 mr-2 animate-spin" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                        Creando...
+                        Guardando...
                     </span>
                 </button>
             </div>
@@ -246,35 +276,17 @@ new #[Layout('components.app-layout')] #[Title('Crear Contacto')] class extends 
     </div>
 </div>
 
-<!-- Script simplificado y más directo para mantener iconos -->
+<!-- Script para mantener Lucide funcional -->
 <script>
-    function initLucideIcons() {
+    document.addEventListener('livewire:updated', function () {
         if (typeof lucide !== 'undefined') {
-            try {
-                lucide.createIcons();
-                console.log('✅ Icons reinicialized');
-            } catch (e) {
-                console.warn('Error with icons:', e);
-            }
+            lucide.createIcons();
         }
-    }
-    
-    // Inicializar al cargar la página
-    document.addEventListener('DOMContentLoaded', initLucideIcons);
-    
-    // IMPORTANTE: Re-ejecutar después de cada update de Livewire
-    document.addEventListener('livewire:updated', function() {
-        // Múltiples intentos para asegurar que funcione
-        setTimeout(initLucideIcons, 50);
-        setTimeout(initLucideIcons, 150);
-        setTimeout(initLucideIcons, 300);
     });
     
-    // También en navegación de Livewire
-    document.addEventListener('livewire:navigated', initLucideIcons);
-    
-    // Inicializar inmediatamente si ya está cargado
-    if (document.readyState === 'complete') {
-        initLucideIcons();
-    }
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    });
 </script>

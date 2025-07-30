@@ -127,7 +127,7 @@
              x-transition:leave-start="opacity-100"
              x-transition:leave-end="opacity-0"
              class="fixed inset-0 z-40 flex lg:hidden">
-            <div class="fixed inset-0 bg-gray-600 bg-opacity-75" @click="sidebarOpen = false"></div>
+            <div class="fixed inset-0 bg-black bg-opacity-25" @click="sidebarOpen = false"></div>
             
             <div class="relative flex-1 flex flex-col max-w-xs w-full bg-white dark:bg-gray-850 border-r border-gray-200 dark:border-gray-700">
                 <!-- Mobile sidebar content -->

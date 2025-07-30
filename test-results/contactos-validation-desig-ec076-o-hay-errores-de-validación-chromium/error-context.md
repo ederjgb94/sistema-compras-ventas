@@ -1,0 +1,89 @@
+# Page snapshot
+
+```yaml
+- img
+- heading "Lamda" [level=1]
+- navigation:
+  - list:
+    - listitem:
+      - list:
+        - listitem:
+          - link "Dashboard":
+            - /url: http://sistema-compras-ventas.test/dashboard
+            - img
+            - text: Dashboard
+        - listitem:
+          - button "Transacciones":
+            - img
+            - text: Transacciones
+            - img
+        - listitem:
+          - link "Contactos":
+            - /url: http://sistema-compras-ventas.test/contactos
+            - img
+            - text: Contactos
+        - listitem:
+          - button "Reportes":
+            - img
+            - text: Reportes
+            - img
+    - listitem:
+      - text: Configuración
+      - list:
+        - listitem:
+          - link "Configuración":
+            - /url: "#"
+            - img
+            - text: Configuración
+        - listitem:
+          - link "Métodos de Pago":
+            - /url: "#"
+            - img
+            - text: Métodos de Pago
+        - listitem:
+          - link "Usuarios":
+            - /url: "#"
+            - img
+            - text: Usuarios
+    - listitem: T Test User
+- heading [level=1]
+- paragraph
+- button:
+  - img
+- button "Open user menu Te"
+- main:
+  - navigation "Breadcrumb":
+    - list:
+      - listitem:
+        - link "Contactos":
+          - /url: http://sistema-compras-ventas.test/contactos
+          - img
+          - text: Contactos
+      - listitem:
+        - img
+        - text: Crear nuevo
+  - heading "Crear Nuevo Contacto" [level=1]
+  - paragraph: Completa la información para agregar un nuevo contacto a tu base de datos
+  - img
+  - heading "Información básica" [level=3]
+  - text: Nombre completo *
+  - textbox "Nombre completo *"
+  - text: Tipo de contacto *
+  - combobox "Tipo de contacto *":
+    - option "Cliente" [selected]
+    - option "Proveedor"
+    - option "Ambos"
+  - heading "Información de contacto" [level=3]
+  - text: Email
+  - textbox "Email"
+  - text: Teléfono
+  - textbox "Teléfono"
+  - heading "Información adicional" [level=3]
+  - text: RFC
+  - textbox "RFC"
+  - paragraph: "Formato: 4 letras, 6 números, 3 caracteres"
+  - text: Dirección
+  - textbox "Dirección"
+  - button "Cancelar"
+  - button "Crear Contacto"
+```
