@@ -166,6 +166,6 @@ return [
     |
     */
 
-    'render_on_redirect' => false,
+    'render_on_redirect' => true,
 
 ];
