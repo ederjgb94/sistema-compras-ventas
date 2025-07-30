@@ -123,7 +123,7 @@
                 </div>
                 <div class="divide-y divide-gray-200 dark:divide-gray-700">
                     @forelse($ultimasTransacciones as $transaccion)
-                    <div class="px-4 sm:px-6 py-3 sm:py-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150">
+                    <a href="{{ route('transacciones.show', $transaccion->id) }}" class="block px-4 sm:px-6 py-3 sm:py-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150 cursor-pointer">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center space-x-3 min-w-0 flex-1">
                                 <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg {{ $transaccion->tipo === 'ingreso' ? 'bg-green-100 dark:bg-green-900/20' : 'bg-red-100 dark:bg-red-900/20' }} flex items-center justify-center flex-shrink-0">
@@ -154,7 +154,7 @@
                                 </p>
                             </div>
                         </div>
-                    </div>
+                    </a>
                     @empty
                     <div class="px-4 sm:px-6 py-6 sm:py-8 text-center">
                         <div class="w-10 h-10 sm:w-12 sm:h-12 mx-auto bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center mb-3">
@@ -288,31 +288,6 @@
                         </div>
                         @endforeach
                     </div>
-                </div>
-            </div>
-
-            <!-- Quick Actions -->
-            <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 sm:p-6">
-                <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                    <span class="hidden sm:inline">Acciones Rápidas</span>
-                    <span class="sm:hidden">Acciones</span>
-                </h3>
-                <div class="space-y-2 sm:space-y-3">
-                    <button class="w-full flex items-center justify-center px-3 sm:px-4 py-2 sm:py-3 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-medium rounded-lg transition-colors duration-150">
-                        <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
-                        <span class="hidden sm:inline">Nueva Transacción</span>
-                        <span class="sm:hidden">Nueva Trans.</span>
-                    </button>
-                    <button class="w-full flex items-center justify-center px-3 sm:px-4 py-2 sm:py-3 bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm font-medium rounded-lg transition-colors duration-150">
-                        <i data-lucide="users" class="w-4 h-4 mr-2"></i>
-                        <span class="hidden sm:inline">Gestionar Contactos</span>
-                        <span class="sm:hidden">Contactos</span>
-                    </button>
-                    <button class="w-full flex items-center justify-center px-3 sm:px-4 py-2 sm:py-3 bg-purple-600 hover:bg-purple-700 text-white text-xs sm:text-sm font-medium rounded-lg transition-colors duration-150">
-                        <i data-lucide="bar-chart-3" class="w-4 h-4 mr-2"></i>
-                        <span class="hidden sm:inline">Reportes</span>
-                        <span class="sm:hidden">Reportes</span>
-                    </button>
                 </div>
             </div>
         </div>

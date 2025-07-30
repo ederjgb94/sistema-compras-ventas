@@ -17,10 +17,10 @@ return new class extends Migration
             $table->string('folio', 50)->unique();
             $table->enum('tipo', ['ingreso', 'egreso'])->index();
             $table->date('fecha')->index();
-            $table->foreignId('contacto_id')->constrained('contactos')->restrictOnDelete();
+            $table->foreignId('contacto_id')->nullable()->constrained('contactos')->nullOnDelete();
 
-            // Referencias flexibles (obra/producto)
-            $table->enum('referencia_tipo', ['obra', 'producto'])->index();
+            // Referencias flexibles (obra/producto/servicio/otro)
+            $table->enum('referencia_tipo', ['obra', 'producto', 'servicio', 'otro'])->index();
             $table->string('referencia_nombre')->index();
             // Usar json() que es compatible con SQLite y PostgreSQL
             $table->json('referencia_datos')->nullable();

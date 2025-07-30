@@ -24,9 +24,21 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // Ejecutar otros seeders
+        // Crear usuario de prueba si no existe
+        User::updateOrCreate(
+            ['email' => 'test@example.com'],
+            [
+                'name' => 'Test User',
+                'email' => 'test@example.com',
+                'password' => bcrypt('password'),
+                'email_verified_at' => now(),
+            ]
+        );
+
         $this->call([
             MetodosPagoSeeder::class,
+            ContactosSeeder::class,
+            TransaccionesSeeder::class,
         ]);
     }
 }
