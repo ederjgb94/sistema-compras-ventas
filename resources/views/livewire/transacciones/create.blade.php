@@ -346,7 +346,7 @@ new #[Layout('components.app-layout')] #[Title('Crear Transacción')] class exte
                             <input type="text" wire:model="total" id="total" 
                                    class="pl-7 w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500" 
                                    placeholder="0.00"
-                                   onfocus="if(this.value === '0' || this.value === '0.00') this.value = ''"
+                                   onfocus="if(this.value === '0' || this.value === '0.00' || this.value === '') this.select()"
                                    onblur="formatToTwoDecimals(this)"
                                    oninput="formatCurrency(this)">
                         </div>
@@ -429,26 +429,58 @@ document.addEventListener('livewire:initialized', function() {
 });
 
 function formatCurrency(input) {
-    // Solo prevenir caracteres no válidos, sin modificar agresivamente
-    const value = input.value;
-    const filteredValue = value.replace(/[^0-9.]/g, '');
+    let value = input.value;
+    let cursorPosition = input.selectionStart;
     
-    // Solo corregir si hay caracteres inválidos
-    if (value !== filteredValue) {
-        const cursorPosition = input.selectionStart;
-        input.value = filteredValue;
+    // Remover todo excepto números y un solo punto
+    value = value.replace(/[^0-9.]/g, '');
+    
+    // Asegurar que solo haya un punto decimal
+    const parts = value.split('.');
+    if (parts.length > 2) {
+        value = parts[0] + '.' + parts.slice(1).join('');
+    }
+    
+    // Limitar a 2 decimales si hay punto
+    if (parts.length === 2 && parts[1].length > 2) {
+        value = parts[0] + '.' + parts[1].substring(0, 2);
+    }
+    
+    // Evitar que empiece con punto
+    if (value.startsWith('.')) {
+        value = '0' + value;
+        cursorPosition++;
+    }
+    
+    // Actualizar el campo solo si cambió
+    if (input.value !== value) {
+        input.value = value;
+        // Ajustar cursor si es necesario
+        if (cursorPosition > value.length) {
+            cursorPosition = value.length;
+        }
         input.setSelectionRange(cursorPosition, cursorPosition);
     }
 }
 
 function formatToTwoDecimals(input) {
-    let value = parseFloat(input.value);
-    if (!isNaN(value) && value > 0) {
-        input.value = value.toFixed(2);
-    } else if (input.value === '') {
-        // No hacer nada si está vacío
-    } else {
-        input.value = '';
+    let value = input.value.trim();
+    
+    // Si está vacío, dejarlo vacío
+    if (value === '') {
+        return;
     }
+    
+    // Convertir a número
+    const numValue = parseFloat(value);
+    
+    // Si no es un número válido o es 0, limpiar
+    if (isNaN(numValue) || numValue <= 0) {
+        input.value = '';
+        return;
+    }
+    
+    // Formatear a 2 decimales
+    input.value = numValue.toFixed(2);
 }
 </script>

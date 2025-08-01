@@ -307,7 +307,7 @@ new #[Layout('components.app-layout')] #[Title('Editar Transacción')] class ext
                             <input type="text" wire:model="total" id="total" 
                                    class="pl-7 w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500" 
                                    placeholder="0.00"
-                                   onfocus="if(this.value === '0' || this.value === '0.00') this.value = ''"
+                                   onfocus="if(this.value === '0' || this.value === '0.00' || this.value === '') this.select()"
                                    onblur="formatToTwoDecimals(this)"
                                    oninput="formatCurrency(this)">
                         </div>
@@ -389,27 +389,41 @@ document.addEventListener('livewire:initialized', function() {
     });
 });
 
-function formatCurrency(input) {
-    // Solo prevenir caracteres no válidos, sin modificar agresivamente
-    const value = input.value;
-    const filteredValue = value.replace(/[^0-9.]/g, '');
+// Función para formatear el valor a dos decimales al perder el foco
+function formatToTwoDecimals(input) {
+    let value = input.value.replace(/[^0-9.]/g, ''); // Solo números y puntos
     
-    // Solo corregir si hay caracteres inválidos
-    if (value !== filteredValue) {
-        const cursorPosition = input.selectionStart;
-        input.value = filteredValue;
-        input.setSelectionRange(cursorPosition, cursorPosition);
+    // Si está vacío, dejar vacío
+    if (!value || value === '') {
+        input.value = '';
+        return;
+    }
+    
+    // Convertir a número y formatear a dos decimales
+    const num = parseFloat(value);
+    if (!isNaN(num)) {
+        input.value = num.toFixed(2);
     }
 }
 
-function formatToTwoDecimals(input) {
-    let value = parseFloat(input.value);
-    if (!isNaN(value) && value > 0) {
-        input.value = value.toFixed(2);
-    } else if (input.value === '') {
-        // No hacer nada si está vacío
-    } else {
-        input.value = '';
+// Función para manejar la entrada en tiempo real
+function formatCurrency(input) {
+    let value = input.value;
+    
+    // Eliminar todos los caracteres que no sean números o puntos
+    value = value.replace(/[^0-9.]/g, '');
+    
+    // Permitir solo un punto decimal
+    const parts = value.split('.');
+    if (parts.length > 2) {
+        value = parts[0] + '.' + parts.slice(1).join('');
     }
+    
+    // Limitar a dos decimales después del punto
+    if (parts.length === 2 && parts[1].length > 2) {
+        value = parts[0] + '.' + parts[1].substring(0, 2);
+    }
+    
+    input.value = value;
 }
 </script>
