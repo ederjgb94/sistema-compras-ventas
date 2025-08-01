@@ -33,13 +33,18 @@ new #[Layout('components.app-layout')] #[Title('Editar Contacto')] class extends
     public function save()
     {
         $this->validate([
-            'nombre' => 'required|string|max:255',
+            'nombre' => 'required|string|max:255|unique:contactos,nombre,' . $this->contacto->id,
             'email' => 'nullable|email|max:255',
             'telefono' => 'nullable|string|max:20',
             'rfc' => 'nullable|string|max:13',
             'direccion' => 'nullable|string|max:500',
             'tipo' => 'required|in:cliente,proveedor,ambos',
             'activo' => 'boolean',
+        ], [
+            'nombre.required' => 'El nombre es obligatorio.',
+            'nombre.unique' => 'Ya existe un contacto con este nombre. Por favor, use un nombre diferente.',
+            'email.email' => 'Por favor, ingrese un email válido.',
+            'tipo.required' => 'Debe seleccionar un tipo de contacto.',
         ]);
 
         try {
@@ -56,8 +61,15 @@ new #[Layout('components.app-layout')] #[Title('Editar Contacto')] class extends
             session()->flash('message', 'Contacto actualizado exitosamente.');
             return $this->redirect(route('contactos.index'));
             
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Manejo específico para errores de base de datos
+            if ($e->getCode() === '23505' || str_contains($e->getMessage(), 'unique')) {
+                session()->flash('error', 'Ya existe un contacto con ese nombre. Por favor, use un nombre diferente.');
+            } else {
+                session()->flash('error', 'Error al guardar el contacto. Por favor, inténtelo nuevamente.');
+            }
         } catch (\Exception $e) {
-            session()->flash('error', 'Error al actualizar el contacto: ' . $e->getMessage());
+            session()->flash('error', 'Error inesperado. Por favor, inténtelo nuevamente.');
         }
     }
 

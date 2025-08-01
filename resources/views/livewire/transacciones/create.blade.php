@@ -13,8 +13,10 @@ new #[Layout('components.app-layout')] #[Title('Crear Transacción')] class exte
     // Propiedades para el formulario
     public string $fecha = '';
     public ?int $contactoId = null;
+    public string $contactoBusqueda = '';
+    public bool $mostrarListaContactos = false;
     public string $concepto = '';
-    public float $total = 0;
+    public $total;
     public ?int $metodoPagoId = null;
     public string $referenciaPago = '';
     public string $observaciones = '';
@@ -27,6 +29,53 @@ new #[Layout('components.app-layout')] #[Title('Crear Transacción')] class exte
         
         $this->tipo = $tipo;
         $this->fecha = now()->format('Y-m-d');
+    }
+
+    public function updatedContactoBusqueda()
+    {
+        // No hacer nada aquí, usar buscarContactos en su lugar
+    }
+
+    public function buscarContactos()
+    {
+        // Si ya hay un contacto seleccionado, solo cambiar cuando el usuario modifique el texto
+        if ($this->contactoId) {
+            $this->contactoId = null; // Limpiar el contacto seleccionado si el usuario edita
+        }
+        
+        // Mostrar la lista si hay texto de búsqueda
+        $this->mostrarListaContactos = !empty($this->contactoBusqueda);
+        
+        if (empty($this->contactoBusqueda)) {
+            $this->contactoId = null;
+        }
+    }
+
+    public function activarBusqueda()
+    {
+        // Si hay un contacto seleccionado y el usuario hace focus en el campo,
+        // permitir que pueda buscar nuevamente
+        if ($this->contactoId && !empty($this->contactoBusqueda)) {
+            $this->contactoId = null;
+            $this->mostrarListaContactos = true;
+        }
+    }
+
+    public function seleccionarContacto($contactoId, $contactoNombre)
+    {
+        $this->contactoId = $contactoId;
+        $this->contactoBusqueda = $contactoNombre;
+        $this->mostrarListaContactos = false;
+        
+        // Emitir evento para actualizar el campo en el frontend
+        $this->dispatch('contacto-seleccionado', nombre: $contactoNombre);
+    }
+
+    public function limpiarContacto()
+    {
+        $this->contactoId = null;
+        $this->contactoBusqueda = '';
+        $this->mostrarListaContactos = false;
     }
 
     public function save()
@@ -74,8 +123,24 @@ new #[Layout('components.app-layout')] #[Title('Crear Transacción')] class exte
 
     public function with(): array
     {
+        $contactosFiltrados = collect();
+        
+        if (!empty($this->contactoBusqueda) && $this->mostrarListaContactos) {
+            $contactosFiltrados = Contacto::where('activo', true)
+                ->where(function($query) {
+                    $termino = '%' . $this->contactoBusqueda . '%';
+                    $query->where('nombre', 'ilike', $termino)
+                          ->orWhere('rfc', 'ilike', $termino)
+                          ->orWhere('email', 'ilike', $termino);
+                })
+                ->orderBy('nombre')
+                ->limit(10)
+                ->get();
+        }
+        
         return [
             'contactos' => Contacto::where('activo', true)->orderBy('nombre')->get(),
+            'contactosFiltrados' => $contactosFiltrados,
             'metodosPago' => MetodoPago::orderBy('nombre')->get(),
         ];
     }
@@ -173,18 +238,79 @@ new #[Layout('components.app-layout')] #[Title('Crear Transacción')] class exte
                         @error('fecha') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                     </div>
 
-                    <!-- Contacto -->
+                    <!-- Contacto con búsqueda -->
                     <div class="sm:col-span-1">
-                        <label for="contactoId" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label for="contacto" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             Contacto
                         </label>
-                        <select wire:model="contactoId" id="contactoId" 
-                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            <option value="">Sin contacto</option>
-                            @foreach($contactos as $contacto)
-                                <option value="{{ $contacto->id }}">{{ $contacto->nombre }}</option>
-                            @endforeach
-                        </select>
+                        <div class="relative">
+                            <div class="relative">
+                                <input type="text" 
+                                       wire:model="contactoBusqueda" 
+                                       wire:input="buscarContactos"
+                                       wire:focus="activarBusqueda"
+                                       id="contacto" 
+                                       class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 pr-10" 
+                                       placeholder="Buscar por nombre, RFC o email..."
+                                       autocomplete="off">
+                                
+                                <!-- Botón para limpiar -->
+                                @if($contactoId || $contactoBusqueda)
+                                    <button type="button" 
+                                            wire:click="limpiarContacto"
+                                            class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                                        <i data-lucide="x" class="w-4 h-4"></i>
+                                    </button>
+                                @else
+                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400">
+                                        <i data-lucide="search" class="w-4 h-4"></i>
+                                    </div>
+                                @endif
+                            </div>
+
+                            <!-- Lista de contactos filtrados -->
+                            @if($mostrarListaContactos && $contactosFiltrados->count() > 0)
+                                <div class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-auto">
+                                    @foreach($contactosFiltrados as $contacto)
+                                        <button type="button"
+                                                wire:click="seleccionarContacto({{ $contacto->id }}, '{{ $contacto->nombre }}')"
+                                                class="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:bg-gray-50 dark:focus:bg-gray-600 border-b border-gray-100 dark:border-gray-600 last:border-b-0">
+                                            <div class="flex items-center justify-between">
+                                                <div class="flex-1 min-w-0">
+                                                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                                        {{ $contacto->nombre }}
+                                                    </p>
+                                                    <div class="flex items-center space-x-2 text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                        @if($contacto->rfc)
+                                                            <span class="flex items-center">
+                                                                <i data-lucide="file-text" class="w-3 h-3 mr-1"></i>
+                                                                {{ $contacto->rfc }}
+                                                            </span>
+                                                        @endif
+                                                        @if($contacto->email)
+                                                            <span class="flex items-center">
+                                                                <i data-lucide="mail" class="w-3 h-3 mr-1"></i>
+                                                                {{ $contacto->email }}
+                                                            </span>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $contacto->tipo === 'cliente' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300' : ($contacto->tipo === 'proveedor' ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300' : 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300') }}">
+                                                    {{ ucfirst($contacto->tipo) }}
+                                                </span>
+                                            </div>
+                                        </button>
+                                    @endforeach
+                                </div>
+                            @elseif($mostrarListaContactos && $contactosFiltrados->count() === 0 && !empty($contactoBusqueda))
+                                <div class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg">
+                                    <div class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 text-center">
+                                        <i data-lucide="search-x" class="w-4 h-4 mx-auto mb-2"></i>
+                                        No se encontraron contactos
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
                         @error('contactoId') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                     </div>
                 </div>
@@ -217,9 +343,12 @@ new #[Layout('components.app-layout')] #[Title('Crear Transacción')] class exte
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <span class="text-gray-500 sm:text-sm">$</span>
                             </div>
-                            <input type="number" wire:model="total" id="total" step="0.01" min="0.01"
+                            <input type="text" wire:model="total" id="total" 
                                    class="pl-7 w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500" 
-                                   placeholder="0.00">
+                                   placeholder="0.00"
+                                   onfocus="if(this.value === '0' || this.value === '0.00') this.value = ''"
+                                   onblur="formatToTwoDecimals(this)"
+                                   oninput="formatCurrency(this)">
                         </div>
                         @error('total') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                     </div>
@@ -288,3 +417,38 @@ new #[Layout('components.app-layout')] #[Title('Crear Transacción')] class exte
         </form>
     </div>
 </div>
+
+<script>
+document.addEventListener('livewire:initialized', function() {
+    Livewire.on('contacto-seleccionado', function(data) {
+        const contactoInput = document.getElementById('contacto');
+        if (contactoInput) {
+            contactoInput.value = data.nombre;
+        }
+    });
+});
+
+function formatCurrency(input) {
+    // Solo prevenir caracteres no válidos, sin modificar agresivamente
+    const value = input.value;
+    const filteredValue = value.replace(/[^0-9.]/g, '');
+    
+    // Solo corregir si hay caracteres inválidos
+    if (value !== filteredValue) {
+        const cursorPosition = input.selectionStart;
+        input.value = filteredValue;
+        input.setSelectionRange(cursorPosition, cursorPosition);
+    }
+}
+
+function formatToTwoDecimals(input) {
+    let value = parseFloat(input.value);
+    if (!isNaN(value) && value > 0) {
+        input.value = value.toFixed(2);
+    } else if (input.value === '') {
+        // No hacer nada si está vacío
+    } else {
+        input.value = '';
+    }
+}
+</script>
