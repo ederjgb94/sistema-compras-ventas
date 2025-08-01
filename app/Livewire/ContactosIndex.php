@@ -131,13 +131,29 @@ class ContactosIndex extends Component
     public function deleteContacto()
     {
         if ($this->selectedContacto) {
-            $this->selectedContacto->delete();
+            // Verificar si tiene transacciones
+            $cantidadTransacciones = $this->selectedContacto->cantidadTransacciones();
 
-            session()->flash('message', 'Contacto eliminado exitosamente.');
+            if ($cantidadTransacciones > 0) {
+                // Soft delete - el contacto se "oculta" pero mantiene las transacciones
+                $this->selectedContacto->delete();
+                session()->flash('message', "Contacto eliminado exitosamente. Se preservaron {$cantidadTransacciones} transacciones asociadas.");
+            } else {
+                // Hard delete si no tiene transacciones (opcional)
+                $this->selectedContacto->forceDelete();
+                session()->flash('message', 'Contacto eliminado completamente (sin transacciones asociadas).');
+            }
 
             $this->showDeleteModal = false;
             $this->selectedContacto = null;
         }
+    }
+
+    public function restaurarContacto($contactoId)
+    {
+        $contacto = Contacto::withTrashed()->findOrFail($contactoId);
+        $contacto->restore();
+        session()->flash('message', 'Contacto restaurado exitosamente.');
     }
 
     public function cancelDelete()
@@ -160,6 +176,7 @@ class ContactosIndex extends Component
     public function render()
     {
         $query = Contacto::query();
+        // Por defecto solo muestra contactos no eliminados (comportamiento automático de soft deletes)
 
         // Aplicar búsqueda
         if ($this->search) {

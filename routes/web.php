@@ -21,9 +21,20 @@ Route::middleware(['auth'])->group(function () {
 
     // Contactos usando el componente Livewire
     Route::get('/contactos', \App\Livewire\ContactosIndex::class)->name('contactos.index');
-    Route::get('/contactos/create', function () {
-        return view('livewire.contactos.create');
-    })->name('contactos.create');
+    Volt::route('/contactos/create', 'contactos.create')->name('contactos.create');
+
+    // Rutas para acciones de contactos
+    Volt::route('/contactos/{id}', 'contactos.show')->name('contactos.show');
+    Volt::route('/contactos/{id}/edit', 'contactos.edit')->name('contactos.edit');
+
+    Route::delete('/contactos/{contacto}', function (\App\Models\Contacto $contacto) {
+        try {
+            $contacto->delete();
+            return redirect()->route('contactos.index')->with('message', 'Contacto eliminado exitosamente');
+        } catch (\Exception $e) {
+            return redirect()->route('contactos.index')->with('error', 'Error al eliminar el contacto: ' . $e->getMessage());
+        }
+    })->name('contactos.destroy');
 
     // Rutas de Transacciones  
     Route::get('/transacciones', \App\Livewire\TransaccionesIndex::class)->name('transacciones.index');

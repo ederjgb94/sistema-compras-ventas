@@ -61,116 +61,224 @@
 
     <!-- Tabla de contactos -->
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="w-full table-fixed divide-y divide-gray-200 dark:divide-gray-700">
-                <thead class="bg-gray-50 dark:bg-gray-900">
-                    <tr>
-                        <th class="w-1/4 px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                            <a href="{{ request()->fullUrlWithQuery(['sort' => 'nombre', 'direction' => request('sort') === 'nombre' && request('direction') === 'asc' ? 'desc' : 'asc']) }}" 
-                                class="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-200">
-                                <span>Nombre</span>
-                                @if(request('sort', 'nombre') === 'nombre')
-                                    <i data-lucide="{{ request('direction', 'asc') === 'asc' ? 'chevron-up' : 'chevron-down' }}" class="w-4 h-4"></i>
-                                @endif
-                            </a>
-                        </th>
-                        <th class="w-20 px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                            <a href="{{ request()->fullUrlWithQuery(['sort' => 'tipo', 'direction' => request('sort') === 'tipo' && request('direction') === 'asc' ? 'desc' : 'asc']) }}" 
-                                class="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-200">
-                                <span>Tipo</span>
-                                @if(request('sort') === 'tipo')
-                                    <i data-lucide="{{ request('direction', 'asc') === 'asc' ? 'chevron-up' : 'chevron-down' }}" class="w-4 h-4"></i>
-                                @endif
-                            </a>
-                        </th>
-                        <th class="w-1/4 px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                            Email / Teléfono
-                        </th>
-                        <th class="w-32 px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                            RFC
-                        </th>
-                        <th class="w-20 px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                            <a href="{{ request()->fullUrlWithQuery(['sort' => 'activo', 'direction' => request('sort') === 'activo' && request('direction') === 'asc' ? 'desc' : 'asc']) }}" 
-                                class="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-200">
-                                <span>Estado</span>
-                                @if(request('sort') === 'activo')
-                                    <i data-lucide="{{ request('direction', 'asc') === 'asc' ? 'chevron-up' : 'chevron-down' }}" class="w-4 h-4"></i>
-                                @endif
-                            </a>
-                        </th>
-                        <th class="w-24 px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                            Acciones
-                        </th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                    @forelse($contactos as $contacto)
-                        <tr class="transition-colors duration-150 hover:bg-gray-50 dark:hover:bg-gray-700">
-                            <td class="w-1/4 px-6 py-4">
-                                <div class="text-sm font-medium text-gray-900 dark:text-white truncate">
-                                    {{ $contacto->nombre }}
-                                </div>
-                            </td>
-                            <td class="w-20 px-6 py-4 whitespace-nowrap">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium shadow-sm
-                                    @if($contacto->tipo === 'cliente') bg-blue-100 text-blue-900 dark:bg-blue-800 dark:text-blue-100 border border-blue-200 dark:border-blue-700
-                                    @elseif($contacto->tipo === 'proveedor') bg-green-100 text-green-900 dark:bg-green-800 dark:text-green-100 border border-green-200 dark:border-green-700
-                                    @else bg-purple-100 text-purple-900 dark:bg-purple-800 dark:text-purple-100 border border-purple-200 dark:border-purple-700
-                                    @endif">
-                                    {{ ucfirst($contacto->tipo) }}
-                                </span>
-                            </td>
-                            <td class="w-1/4 px-6 py-4">
-                                <div class="text-sm text-gray-900 dark:text-white truncate">{{ $contacto->email ?: '-' }}</div>
-                                <div class="text-sm text-gray-500 dark:text-gray-400 truncate">{{ $contacto->telefono ?: '-' }}</div>
-                            </td>
-                            <td class="w-32 px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                                {{ $contacto->rfc ?: '-' }}
-                            </td>
-                            <td class="w-20 px-6 py-4 whitespace-nowrap">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium shadow-sm
-                                    {{ $contacto->activo 
-                                        ? 'bg-green-100 text-green-900 dark:bg-green-800 dark:text-green-100 border border-green-200 dark:border-green-700' 
-                                        : 'bg-red-100 text-red-900 dark:bg-red-800 dark:text-red-100 border border-red-200 dark:border-red-700' 
-                                    }}">
-                                    {{ $contacto->activo ? 'Activo' : 'Inactivo' }}
-                                </span>
-                            </td>
-                            <td class="w-24 px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                                <div class="flex items-center justify-center space-x-2">
-                                    <button wire:click="openEditModal({{ $contacto->id }})" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
-                                        <i data-lucide="edit" class="w-4 h-4"></i>
-                                    </button>
-                                    
-                                    <button wire:click="confirmDelete({{ $contacto->id }})" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
-                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    @empty
+        <!-- Vista de tabla para pantallas grandes -->
+        <div class="hidden lg:block">
+            <div class="overflow-x-auto">
+                <table class="w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead class="bg-gray-50 dark:bg-gray-900">
                         <tr>
-                            <td colspan="6" class="px-6 py-12 text-center">
-                                <div class="flex flex-col items-center justify-center">
-                                    <i data-lucide="users" class="w-12 h-12 text-gray-400 dark:text-gray-600 mb-4"></i>
-                                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No hay contactos</h3>
-                                    <p class="text-gray-500 dark:text-gray-400 mb-4">
-                                        @if($search || $tipoFiltro || $estadoFiltro !== '')
-                                            No se encontraron contactos que coincidan con los filtros aplicados.
-                                        @else
-                                            Comienza agregando tu primer contacto.
-                                        @endif
-                                    </p>
-                                    <button wire:click="openCreateModal" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-150">
-                                        <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
-                                        Agregar Contacto
-                                    </button>
-                                </div>
-                            </td>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                <a href="{{ request()->fullUrlWithQuery(['sort' => 'nombre', 'direction' => request('sort') === 'nombre' && request('direction') === 'asc' ? 'desc' : 'asc']) }}" 
+                                    class="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-200">
+                                    <span>Nombre</span>
+                                    @if(request('sort', 'nombre') === 'nombre')
+                                        <i data-lucide="{{ request('direction', 'asc') === 'asc' ? 'chevron-up' : 'chevron-down' }}" class="w-4 h-4"></i>
+                                    @endif
+                                </a>
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                <a href="{{ request()->fullUrlWithQuery(['sort' => 'tipo', 'direction' => request('sort') === 'tipo' && request('direction') === 'asc' ? 'desc' : 'asc']) }}" 
+                                    class="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-200">
+                                    <span>Tipo</span>
+                                    @if(request('sort') === 'tipo')
+                                        <i data-lucide="{{ request('direction', 'asc') === 'asc' ? 'chevron-up' : 'chevron-down' }}" class="w-4 h-4"></i>
+                                    @endif
+                                </a>
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                Email / Teléfono
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                RFC
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                <a href="{{ request()->fullUrlWithQuery(['sort' => 'activo', 'direction' => request('sort') === 'activo' && request('direction') === 'asc' ? 'desc' : 'asc']) }}" 
+                                    class="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-200">
+                                    <span>Estado</span>
+                                    @if(request('sort') === 'activo')
+                                        <i data-lucide="{{ request('direction', 'asc') === 'asc' ? 'chevron-up' : 'chevron-down' }}" class="w-4 h-4"></i>
+                                    @endif
+                                </a>
+                            </th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                Acciones
+                            </th>
                         </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                        @forelse($contactos as $contacto)
+                            <tr class="transition-colors duration-150 hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-medium text-gray-900 dark:text-white">
+                                        {{ $contacto->nombre }}
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium shadow-sm
+                                        @if($contacto->tipo === 'cliente') bg-blue-100 text-blue-900 dark:bg-blue-800 dark:text-blue-100 border border-blue-200 dark:border-blue-700
+                                        @elseif($contacto->tipo === 'proveedor') bg-green-100 text-green-900 dark:bg-green-800 dark:text-green-100 border border-green-200 dark:border-green-700
+                                        @else bg-purple-100 text-purple-900 dark:bg-purple-800 dark:text-purple-100 border border-purple-200 dark:border-purple-700
+                                        @endif">
+                                        {{ ucfirst($contacto->tipo) }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="text-sm text-gray-900 dark:text-white">{{ $contacto->email ?: '-' }}</div>
+                                    <div class="text-sm text-gray-500 dark:text-gray-400">
+                                        @if($contacto->telefono)
+                                            <a href="tel:{{ $contacto->telefono }}" class="inline-flex items-center hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-150" title="Llamar a {{ $contacto->telefono }}">
+                                                <i data-lucide="phone" class="w-3 h-3 mr-1"></i>
+                                                {{ $contacto->telefono }}
+                                            </a>
+                                        @else
+                                            -
+                                        @endif
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                    {{ $contacto->rfc ?: '-' }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium shadow-sm
+                                        {{ $contacto->activo 
+                                            ? 'bg-green-100 text-green-900 dark:bg-green-800 dark:text-green-100 border border-green-200 dark:border-green-700' 
+                                            : 'bg-red-100 text-red-900 dark:bg-red-800 dark:text-red-100 border border-red-200 dark:border-red-700' 
+                                        }}">
+                                        {{ $contacto->activo ? 'Activo' : 'Inactivo' }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                                    <div class="flex items-center justify-center space-x-2">
+                                        <a href="{{ route('contactos.show', $contacto->id) }}" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300" title="Ver detalles">
+                                            <i data-lucide="eye" class="w-4 h-4"></i>
+                                        </a>
+                                        <a href="{{ route('contactos.edit', $contacto->id) }}" class="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300" title="Editar">
+                                            <i data-lucide="edit" class="w-4 h-4"></i>
+                                        </a>
+                                        
+                                        <form method="POST" action="{{ route('contactos.destroy', $contacto->id) }}" class="inline" onsubmit="return confirm('{{ $contacto->tieneTransacciones() ? '⚠️ Este contacto tiene ' . $contacto->cantidadTransacciones() . ' transacciones asociadas. Se ocultará pero las transacciones se preservarán. ¿Continuar?' : '¿Estás seguro de que quieres eliminar este contacto?' }}')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300" title="Eliminar">
+                                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="px-6 py-12 text-center">
+                                    <div class="flex flex-col items-center justify-center">
+                                        <i data-lucide="users" class="w-12 h-12 text-gray-400 dark:text-gray-600 mb-4"></i>
+                                        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No hay contactos</h3>
+                                        <p class="text-gray-500 dark:text-gray-400 mb-4">
+                                            @if($search || $tipoFiltro || $estadoFiltro !== '')
+                                                No se encontraron contactos que coincidan con los filtros aplicados.
+                                            @else
+                                                Comienza agregando tu primer contacto.
+                                            @endif
+                                        </p>
+                                        <button wire:click="openCreateModal" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-150">
+                                            <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
+                                            Agregar Contacto
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Vista de tarjetas para pantallas pequeñas y medianas -->
+        <div class="lg:hidden divide-y divide-gray-200 dark:divide-gray-700">
+            @forelse($contactos as $contacto)
+                <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center space-x-3">
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-900 dark:text-white">{{ $contacto->nombre }}</h3>
+                                <div class="flex items-center space-x-2 mt-1">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
+                                        @if($contacto->tipo === 'cliente') bg-blue-100 text-blue-900 dark:bg-blue-800 dark:text-blue-100
+                                        @elseif($contacto->tipo === 'proveedor') bg-green-100 text-green-900 dark:bg-green-800 dark:text-green-100
+                                        @else bg-purple-100 text-purple-900 dark:bg-purple-800 dark:text-purple-100
+                                        @endif">
+                                        {{ ucfirst($contacto->tipo) }}
+                                    </span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
+                                        {{ $contacto->activo 
+                                            ? 'bg-green-100 text-green-900 dark:bg-green-800 dark:text-green-100' 
+                                            : 'bg-red-100 text-red-900 dark:bg-red-800 dark:text-red-100' 
+                                        }}">
+                                        {{ $contacto->activo ? 'Activo' : 'Inactivo' }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <a href="{{ route('contactos.show', $contacto->id) }}" class="p-2 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors" title="Ver detalles">
+                                <i data-lucide="eye" class="w-4 h-4"></i>
+                            </a>
+                            <a href="{{ route('contactos.edit', $contacto->id) }}" class="p-2 text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-md transition-colors" title="Editar">
+                                <i data-lucide="edit" class="w-4 h-4"></i>
+                            </a>
+                            <form method="POST" action="{{ route('contactos.destroy', $contacto->id) }}" class="inline" onsubmit="return confirm('{{ $contacto->tieneTransacciones() ? '⚠️ Este contacto tiene ' . $contacto->cantidadTransacciones() . ' transacciones asociadas. Se ocultará pero las transacciones se preservarán. ¿Continuar?' : '¿Estás seguro de que quieres eliminar este contacto?' }}')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="p-2 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors" title="Eliminar">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-2">
+                        @if($contacto->email)
+                            <div class="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                                <i data-lucide="mail" class="w-4 h-4 mr-2 text-gray-400"></i>
+                                <span>{{ $contacto->email }}</span>
+                            </div>
+                        @endif
+                        
+                        @if($contacto->telefono)
+                            <div class="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                                <i data-lucide="phone" class="w-4 h-4 mr-2 text-gray-400"></i>
+                                <a href="tel:{{ $contacto->telefono }}" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-150">
+                                    {{ $contacto->telefono }}
+                                </a>
+                            </div>
+                        @endif
+                        
+                        @if($contacto->rfc)
+                            <div class="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                                <i data-lucide="file-text" class="w-4 h-4 mr-2 text-gray-400"></i>
+                                <span>{{ $contacto->rfc }}</span>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            @empty
+                <div class="p-6 text-center">
+                    <div class="flex flex-col items-center justify-center">
+                        <i data-lucide="users" class="w-12 h-12 text-gray-400 dark:text-gray-600 mb-4"></i>
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No hay contactos</h3>
+                        <p class="text-gray-500 dark:text-gray-400 mb-4">
+                            @if($search || $tipoFiltro || $estadoFiltro !== '')
+                                No se encontraron contactos que coincidan con los filtros aplicados.
+                            @else
+                                Comienza agregando tu primer contacto.
+                            @endif
+                        </p>
+                        <button wire:click="openCreateModal" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-150">
+                            <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
+                            Agregar Contacto
+                        </button>
+                    </div>
+                </div>
+            @endforelse
         </div>
 
         <!-- Paginación -->

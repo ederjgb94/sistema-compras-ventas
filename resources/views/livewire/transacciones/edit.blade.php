@@ -19,6 +19,12 @@ new #[Layout('components.app-layout')] #[Title('Editar Transacción')] class ext
     public string $referenciaPago = '';
     public string $observaciones = '';
 
+    // Propiedades para la búsqueda de contactos
+    public string $buscarContacto = '';
+    public bool $mostrarContactos = false;
+    public array $contactosFiltrados = [];
+    public ?string $contactoSeleccionado = null;
+
     public function mount($id)
     {
         $this->transaccion = Transaccion::with(['contacto', 'metodoPago'])->findOrFail($id);
@@ -30,6 +36,56 @@ new #[Layout('components.app-layout')] #[Title('Editar Transacción')] class ext
         $this->metodoPagoId = $this->transaccion->metodo_pago_id;
         $this->referenciaPago = $this->transaccion->referencia_pago ?? '';
         $this->observaciones = $this->transaccion->observaciones ?? '';
+        
+        // Inicializar la búsqueda de contacto con el contacto actual si existe
+        if ($this->transaccion->contacto) {
+            $this->buscarContacto = $this->transaccion->contacto->nombre;
+            $this->contactoSeleccionado = $this->transaccion->contacto->nombre;
+        }
+    }
+
+    public function updatedBuscarContacto()
+    {
+        if (strlen($this->buscarContacto) >= 1) {
+            $this->contactosFiltrados = Contacto::where('activo', true)
+                ->where(function($query) {
+                    $query->where('nombre', 'ilike', '%' . $this->buscarContacto . '%')
+                          ->orWhere('rfc', 'ilike', '%' . $this->buscarContacto . '%')
+                          ->orWhere('email', 'ilike', '%' . $this->buscarContacto . '%');
+                })
+                ->orderBy('nombre')
+                ->limit(5)
+                ->get()
+                ->toArray();
+            
+            $this->mostrarContactos = true;
+        } else {
+            $this->contactosFiltrados = [];
+            $this->mostrarContactos = false;
+            $this->contactoId = null;
+            $this->contactoSeleccionado = null;
+        }
+    }
+
+    public function seleccionarContacto($contactoId, $contactoNombre)
+    {
+        $this->contactoId = $contactoId;
+        $this->buscarContacto = $contactoNombre;
+        $this->contactoSeleccionado = $contactoNombre;
+        $this->mostrarContactos = false;
+        $this->contactosFiltrados = [];
+        
+        // Emitir evento para actualizar el campo en el frontend
+        $this->dispatch('contacto-seleccionado', nombre: $contactoNombre);
+    }
+
+    public function limpiarContacto()
+    {
+        $this->contactoId = null;
+        $this->buscarContacto = '';
+        $this->contactoSeleccionado = null;
+        $this->mostrarContactos = false;
+        $this->contactosFiltrados = [];
     }
 
     public function save()
@@ -71,7 +127,6 @@ new #[Layout('components.app-layout')] #[Title('Editar Transacción')] class ext
     public function with(): array
     {
         return [
-            'contactos' => Contacto::where('activo', true)->orderBy('nombre')->get(),
             'metodosPago' => MetodoPago::orderBy('nombre')->get(),
         ];
     }
@@ -171,16 +226,52 @@ new #[Layout('components.app-layout')] #[Title('Editar Transacción')] class ext
 
                     <!-- Contacto -->
                     <div class="sm:col-span-1">
-                        <label for="contactoId" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label for="contacto" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             Contacto
                         </label>
-                        <select wire:model="contactoId" id="contactoId" 
-                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            <option value="">Sin contacto</option>
-                            @foreach($contactos as $contacto)
-                                <option value="{{ $contacto->id }}">{{ $contacto->nombre }}</option>
-                            @endforeach
-                        </select>
+                        <div class="relative">
+                            <div class="relative">
+                                <input type="text" 
+                                       wire:model.live="buscarContacto"
+                                       id="contacto"
+                                       class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 pr-10" 
+                                       placeholder="Buscar por nombre, RFC o email..."
+                                       autocomplete="off">
+                                @if($contactoSeleccionado)
+                                    <button type="button" 
+                                            wire:click="limpiarContacto"
+                                            class="absolute inset-y-0 right-0 flex items-center pr-3">
+                                        <i data-lucide="x" class="h-4 w-4 text-gray-400 hover:text-gray-600"></i>
+                                    </button>
+                                @else
+                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                        <i data-lucide="search" class="h-4 w-4 text-gray-400"></i>
+                                    </div>
+                                @endif
+                            </div>
+                            
+                            @if($mostrarContactos && count($contactosFiltrados) > 0)
+                                <div class="absolute z-10 mt-1 w-full bg-white dark:bg-gray-700 shadow-lg rounded-md border border-gray-300 dark:border-gray-600 max-h-60 overflow-auto">
+                                    @foreach($contactosFiltrados as $contacto)
+                                        <button type="button" 
+                                                wire:click="seleccionarContacto({{ $contacto['id'] }}, '{{ $contacto['nombre'] }}')"
+                                                class="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-600 focus:bg-gray-50 dark:focus:bg-gray-600 focus:outline-none border-b border-gray-200 dark:border-gray-600 last:border-b-0">
+                                            <div class="flex justify-between items-center">
+                                                <div class="flex-1">
+                                                    <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $contacto['nombre'] }}</p>
+                                                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ $contacto['email'] ?? 'Sin email' }}</p>
+                                                </div>
+                                                <div class="flex-shrink-0">
+                                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
+                                                        {{ ucfirst($contacto['tipo']) }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </button>
+                                    @endforeach
+                                </div>
+                            @endif
+                        </div>
                         @error('contactoId') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                     </div>
                 </div>
@@ -213,9 +304,12 @@ new #[Layout('components.app-layout')] #[Title('Editar Transacción')] class ext
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <span class="text-gray-500 sm:text-sm">$</span>
                             </div>
-                            <input type="number" wire:model="total" id="total" step="0.01" min="0.01"
+                            <input type="text" wire:model="total" id="total" 
                                    class="pl-7 w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500" 
-                                   placeholder="0.00">
+                                   placeholder="0.00"
+                                   onfocus="if(this.value === '0' || this.value === '0.00' || this.value === '') this.select()"
+                                   onblur="formatToTwoDecimals(this)"
+                                   oninput="formatCurrency(this)">
                         </div>
                         @error('total') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                     </div>
@@ -284,3 +378,52 @@ new #[Layout('components.app-layout')] #[Title('Editar Transacción')] class ext
         </form>
     </div>
 </div>
+
+<script>
+document.addEventListener('livewire:initialized', function() {
+    Livewire.on('contacto-seleccionado', function(data) {
+        const contactoInput = document.querySelector('input[wire\\:model\\.live="buscarContacto"]');
+        if (contactoInput) {
+            contactoInput.value = data.nombre;
+        }
+    });
+});
+
+// Función para formatear el valor a dos decimales al perder el foco
+function formatToTwoDecimals(input) {
+    let value = input.value.replace(/[^0-9.]/g, ''); // Solo números y puntos
+    
+    // Si está vacío, dejar vacío
+    if (!value || value === '') {
+        input.value = '';
+        return;
+    }
+    
+    // Convertir a número y formatear a dos decimales
+    const num = parseFloat(value);
+    if (!isNaN(num)) {
+        input.value = num.toFixed(2);
+    }
+}
+
+// Función para manejar la entrada en tiempo real
+function formatCurrency(input) {
+    let value = input.value;
+    
+    // Eliminar todos los caracteres que no sean números o puntos
+    value = value.replace(/[^0-9.]/g, '');
+    
+    // Permitir solo un punto decimal
+    const parts = value.split('.');
+    if (parts.length > 2) {
+        value = parts[0] + '.' + parts.slice(1).join('');
+    }
+    
+    // Limitar a dos decimales después del punto
+    if (parts.length === 2 && parts[1].length > 2) {
+        value = parts[0] + '.' + parts[1].substring(0, 2);
+    }
+    
+    input.value = value;
+}
+</script>

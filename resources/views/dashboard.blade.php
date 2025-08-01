@@ -1,14 +1,6 @@
 <x-app-layout>
-    <x-slot name="pageTitle">Tablero de Control</x-slot>
-    <x-slot name="pageDescription">Panel principal del sistema</x-slot>
-    
-    <x-slot name="headerActions">
-        <button class="inline-flex items-center px-3 sm:px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-medium rounded-lg transition-colors duration-150">
-            <i data-lucide="plus" class="w-4 h-4 mr-1 sm:mr-2"></i>
-            <span class="hidden sm:inline">Agregar Miembro</span>
-            <span class="sm:hidden">Agregar</span>
-        </button>
-    </x-slot>
+    <x-slot name="pageTitle">Dashboard</x-slot>
+    <x-slot name="pageDescription">Resumen general</x-slot>
 
     <!-- Tabs -->
     <div class="mb-6">
